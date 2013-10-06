@@ -48,6 +48,7 @@ class Extractor:
         self._stop = False
         self._extract_thread = None
         self._condition = threading.Condition()
+        self._errors = []
 
         if self._type == ZIP:
             self._zfile = czipfile.ZipFile(src, 'r')
@@ -130,6 +131,7 @@ class Extractor:
         new thread. Every time a new file is extracted a notify() will be
         signalled on the Condition that was returned by setup().
         """
+        self._errors = []
         self._extract_thread = threading.Thread(target=self._thread_extract)
         self._extract_thread.setDaemon(False)
         self._extract_thread.start()
@@ -186,6 +188,7 @@ class Extractor:
             # possible infinite block. Damaged or missing files *should* be
             # handled gracefully by the main program anyway.
             print e
+            self._errors.append(e)
         self._condition.acquire()
         self._extracted[name] = True
         self._condition.notify()
@@ -202,6 +205,9 @@ class Extractor:
     def set_password(self, password):
         if self._type == ZIP:
             self._zfile.setpassword(password)
+
+    def get_errors(self):
+        return self._errors
 
 
 class Packer:
