@@ -154,7 +154,7 @@ def _create_thumbnail(path, dst_dir, image_path=None):
 
 
 def _path_to_thumbpath(path, dst_dir):
-    uri = 'file://' + pathname2url(os.path.normpath(path))
+    uri = 'file://' + pathname2url(os.path.normpath(path).encode('utf-8'))
     return _uri_to_thumbpath(uri, dst_dir)
 
 
