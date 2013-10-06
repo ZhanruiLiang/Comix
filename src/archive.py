@@ -188,12 +188,12 @@ class Extractor:
                     proc.wait()
                 else:
                     print '! Could not find RAR file extractor.'
-        except Exception:
+        except Exception as e:
             # Better to ignore any failed extractions (e.g. from a corrupt
             # archive) than to crash here and leave the main thread in a
             # possible infinite block. Damaged or missing files *should* be
             # handled gracefully by the main program anyway.
-            pass
+            print e
         self._condition.acquire()
         self._extracted[name] = True
         self._condition.notify()
