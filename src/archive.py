@@ -49,6 +49,7 @@ class Extractor:
         self._extract_thread = None
         self._condition = threading.Condition()
         self._errors = []
+        self._password = None
 
         if self._type == ZIP:
             self._zfile = czipfile.ZipFile(src, 'r')
@@ -176,8 +177,13 @@ class Extractor:
                     print '! Non-local tar member:', name, '\n'
             elif self._type == RAR:
                 if _rar_exec is not None:
-                    proc = process.Process([_rar_exec, 'x', '-kb', '-p-',
-                        '-o-', '-inul', '--', self._src, name, self._dst])
+                    if self._password is not None:
+                        pw_arg = '-p' + self._password
+                    else:
+                        pw_arg = '-p-'
+                    cmd = [_rar_exec, 'x', '-kb', pw_arg,
+                        '-o-', '-inul', '--', self._src, name, self._dst]
+                    proc = process.Process(cmd)
                     proc.spawn()
                     proc.wait()
                 else:
@@ -200,11 +206,23 @@ class Extractor:
                 if info.flag_bits & 0x1:
                     return True
             return False
+        elif self._type == RAR:
+            proc = process.Process([_rar_exec, 'l', self._src])
+            fd = proc.spawn()
+            for line in fd.readlines():
+                line = line.strip()
+                if line.startswith('*'):
+                    return True
+            fd.close()
+            proc.wait()
+            return False
         return False
 
     def set_password(self, password):
         if self._type == ZIP:
             self._zfile.setpassword(password)
+        else:
+            self._password = password
 
     def get_errors(self):
         return self._errors
