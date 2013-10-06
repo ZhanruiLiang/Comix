@@ -48,7 +48,6 @@ class Extractor:
         self._stop = False
         self._extract_thread = None
         self._condition = threading.Condition()
-        self._password = None
 
         if self._type == ZIP:
             self._zfile = czipfile.ZipFile(src, 'r')
@@ -165,14 +164,7 @@ class Extractor:
                     os.makedirs(os.path.dirname(dst_path))
                 new = open(dst_path, 'wb')
                 info = self._zfile.getinfo(name)
-                if info.flag_bits & 0x1:
-                    if self._password is None:
-                        # This would fail and throw an exception
-                        new.write(self._zfile.read(name))
-                    else:
-                        new.write(self._zfile.read(name, self._password))
-                else:
-                    new.write(self._zfile.read(name))
+                new.write(self._zfile.read(name))
                 new.close()
             elif self._type in (TAR, GZIP, BZIP2):
                 if os.path.normpath(os.path.join(self._dst, name)).startswith(
@@ -208,7 +200,8 @@ class Extractor:
         return False
 
     def set_password(self, password):
-        self._password = password
+        if self._type == ZIP:
+            self._zfile.setpassword(password)
 
 
 class Packer:
