@@ -200,7 +200,12 @@ class Extractor:
         self._condition.release()
 
     def need_password(self):
-        return True
+        if self._type == ZIP:
+            for info in self._zfile.infolist():
+                if info.flag_bits & 0x1:
+                    return True
+            return False
+        return False
 
     def set_password(self, password):
         self._password = password
