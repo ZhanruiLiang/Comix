@@ -235,6 +235,19 @@ class FileHandler:
         if self.archive_type is not None:
             self._base_path = path
             self._condition = self._extractor.setup(path, self._tmp_dir)
+            if self._extractor.need_password():
+                label = gtk.Label("Password:")
+                entry = gtk.Entry()
+                dialog = gtk.Dialog("Password required", None, gtk.DIALOG_MODAL, (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+                dialog.vbox.pack_start(label)
+                dialog.vbox.pack_start(entry)
+                label.show()
+                entry.show()
+                resp = dialog.run()
+                if resp == gtk.RESPONSE_ACCEPT:
+                    self._extractor.set_password(entry.get_text())
+                dialog.destroy()
+
             files = self._extractor.get_files()
             image_files = filter(self._image_re.search, files)
             alphanumeric_sort(image_files)
