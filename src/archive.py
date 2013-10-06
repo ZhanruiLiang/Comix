@@ -3,7 +3,7 @@
 import sys
 import os
 import re
-import zipfile
+import czipfile
 import tarfile
 import threading
 
@@ -50,7 +50,7 @@ class Extractor:
         self._condition = threading.Condition()
 
         if self._type == ZIP:
-            self._zfile = zipfile.ZipFile(src, 'r')
+            self._zfile = czipfile.ZipFile(src, 'r')
             self._files = self._zfile.namelist()
         elif self._type in (TAR, GZIP, BZIP2):
             self._tfile = tarfile.open(src, 'r')
@@ -236,7 +236,7 @@ class Packer:
 
     def _thread_pack(self):
         try:
-            zfile = zipfile.ZipFile(self._archive_path, 'w')
+            zfile = czipfile.ZipFile(self._archive_path, 'w')
         except Exception:
             print '! Could not create archive', self._archive_path
             return
@@ -246,7 +246,7 @@ class Packer:
         for i, path in enumerate(self._image_files):
             filename = pattern % (i + 1, os.path.splitext(path)[1])
             try:
-                zfile.write(path, filename, zipfile.ZIP_STORED)
+                zfile.write(path, filename, czipfile.ZIP_STORED)
             except Exception:
                 print '! Could not add file %s to add to %s, aborting...' % (
                     path, self._archive_path)
@@ -262,7 +262,7 @@ class Packer:
             while filename in used_names:
                 filename = '_%s' % filename
             try:
-                zfile.write(path, filename, zipfile.ZIP_DEFLATED)
+                zfile.write(path, filename, czipfile.ZIP_DEFLATED)
             except Exception:
                 print '! Could not add file %s to add to %s, aborting...' % (
                     path, self._archive_path)
@@ -283,7 +283,7 @@ def archive_mime_type(path):
         if os.path.isfile(path):
             if not os.access(path, os.R_OK):
                 return None
-            if zipfile.is_zipfile(path):
+            if czipfile.is_zipfile(path):
                 return ZIP
             fd = open(path, 'rb')
             magic = fd.read(4)
