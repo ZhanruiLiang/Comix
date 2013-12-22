@@ -291,7 +291,7 @@ class FileHandler:
                 fpath = os.path.join(self._base_path, f)
                 if is_image_file(fpath):
                     self._image_files.append(fpath)
-            self._image_files.sort(locale.strcoll)
+            sort_images(self._image_files)
             self._current_image_index = self._image_files.index(path)
 
         if not self._image_files:
@@ -578,6 +578,15 @@ def is_image_file(path):
         return info is not None
     return False
 
+def sort_images(imagepaths):
+    """Sort the image paths **inplace** according to the number in their file names.
+    """
+    sortKeys = {}
+    for path in imagepaths:
+        simplePath = os.path.split(path)[-1]
+        sortKeys[path] = (map(int, re.findall(r'\d+', simplePath)), simplePath)
+    imagepaths.sort(key=lambda path: sortKeys[path])
+    # print list(sorted(sortKeys.values()))
 
 def alphanumeric_sort(filenames):
     """Do an in-place alphanumeric sort of the strings in <filenames>,
