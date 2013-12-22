@@ -23,6 +23,7 @@ import os
 import sys
 import getopt
 import shutil
+import compileall
 
 source_dir = os.path.dirname(os.path.realpath(__file__))
 install_dir = '/usr/local/'
@@ -36,70 +37,38 @@ TRANSLATIONS = ('ca', 'cs', 'de', 'es', 'fr', 'gl', 'hr', 'hu', 'id', 'ja',
 
 # Files to be installed, as (source file, destination directory)
 FILES = (('src/about.py', 'share/comix/src'),
-         ('src/about.pyc', 'share/comix/src'),
          ('src/archive.py', 'share/comix/src'),
-         ('src/archive.pyc', 'share/comix/src'),
          ('src/bookmark.py', 'share/comix/src'),
-         ('src/bookmark.pyc', 'share/comix/src'),
          ('src/comix.py', 'share/comix/src'),
          ('src/comment.py', 'share/comix/src'),
-         ('src/comment.pyc', 'share/comix/src'),
          ('src/constants.py', 'share/comix/src'),
-         ('src/constants.pyc', 'share/comix/src'),
          ('src/cursor.py', 'share/comix/src'),
-         ('src/cursor.pyc', 'share/comix/src'),
          ('src/deprecated.py', 'share/comix/src'),
-         ('src/deprecated.pyc', 'share/comix/src'),
          ('src/edit.py', 'share/comix/src'),
-         ('src/edit.pyc', 'share/comix/src'),
          ('src/encoding.py', 'share/comix/src'),
-         ('src/encoding.pyc', 'share/comix/src'),
          ('src/enhance.py', 'share/comix/src'),
-         ('src/enhance.pyc', 'share/comix/src'),
          ('src/event.py', 'share/comix/src'),
-         ('src/event.pyc', 'share/comix/src'),
          ('src/filechooser.py', 'share/comix/src'),
-         ('src/filechooser.pyc', 'share/comix/src'),
          ('src/filehandler.py', 'share/comix/src'),
-         ('src/filehandler.pyc', 'share/comix/src'),
          ('src/histogram.py', 'share/comix/src'),
-         ('src/histogram.pyc', 'share/comix/src'),
          ('src/icons.py', 'share/comix/src'),
-         ('src/icons.pyc', 'share/comix/src'),
          ('src/image.py', 'share/comix/src'),
-         ('src/image.pyc', 'share/comix/src'),
          ('src/labels.py', 'share/comix/src'),
-         ('src/labels.pyc', 'share/comix/src'),
          ('src/lens.py', 'share/comix/src'),
-         ('src/lens.pyc', 'share/comix/src'),
          ('src/library.py', 'share/comix/src'),
-         ('src/library.pyc', 'share/comix/src'),
          ('src/librarybackend.py', 'share/comix/src'),
-         ('src/librarybackend.pyc', 'share/comix/src'),
          ('src/main.py', 'share/comix/src'),
-         ('src/main.pyc', 'share/comix/src'),
          ('src/portability.py', 'share/comix/src'),
-         ('src/portability.pyc', 'share/comix/src'),
          ('src/preferences.py', 'share/comix/src'),
-         ('src/preferences.pyc', 'share/comix/src'),
          ('src/process.py', 'share/comix/src'),
-         ('src/process.pyc', 'share/comix/src'),
          ('src/properties.py', 'share/comix/src'),
-         ('src/properties.pyc', 'share/comix/src'),
          ('src/recent.py', 'share/comix/src'),
-         ('src/recent.pyc', 'share/comix/src'),
          ('src/slideshow.py', 'share/comix/src'),
-         ('src/slideshow.pyc', 'share/comix/src'),
          ('src/status.py', 'share/comix/src'),
-         ('src/status.pyc', 'share/comix/src'),
          ('src/thumbbar.py', 'share/comix/src'),
-         ('src/thumbbar.pyc', 'share/comix/src'),
          ('src/thumbnail.py', 'share/comix/src'),
-         ('src/thumbnail.pyc', 'share/comix/src'),
          ('src/thumbremover.py', 'share/comix/src'),
-         ('src/thumbremover.pyc', 'share/comix/src'),
          ('src/ui.py', 'share/comix/src'),
-         ('src/ui.pyc', 'share/comix/src'),
          ('images/16x16/comix.png', 'share/comix/images/16x16'),
          ('images/comix.svg', 'share/comix/images'),
          ('images/double-page.png', 'share/comix/images'),
@@ -209,6 +178,14 @@ def uninstall(path):
     except Exception:
         print 'Could not remove', path
 
+def compile_pyc(files):
+    newfiles = list(files)
+    for fname, dest in files:
+        if fname.endswith('.py'):
+            compileall.compile_file(fname)
+            newfiles.append((fname + 'c', dest))
+    return tuple(newfiles)
+
 def make_link(src, link):
     """Create a symlink <link> pointing to <src>. The <link> path is relative
     to the install_dir, and the <src> path is relative to the full path of
@@ -299,6 +276,7 @@ if args == ['install']:
     if not os.access(install_dir, os.W_OK):
         print 'You do not have write permissions to', install_dir
         sys.exit(1)
+    FILES = compile_pyc(FILES)
     for src, dst in FILES:
         install(src, dst)
     for lang in TRANSLATIONS:
